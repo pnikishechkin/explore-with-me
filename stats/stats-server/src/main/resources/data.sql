@@ -9,4 +9,4 @@ VALUES ('App2', '/times', '192.111.111.111', '2025-09-06 11:00:23');
 INSERT INTO stats (app, uri, ip, time)
 VALUES ('App2', '/times', '192.111.111.145', '2025-09-06 11:00:23');
 DELETE
-FROM stats
+FROM stats;
