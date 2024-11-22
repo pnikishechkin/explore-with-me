@@ -29,15 +29,17 @@ public class StatsServiceImpl implements StatsService {
         List<HitWithCounts> res = null;
 
         if (uris == null) {
-            if (!unique)
+            if (!unique) {
                 res = statsRepository.findByDates(start, end);
-            else
+            } else {
                 res = statsRepository.findByDatesUniqueIp(start, end);
+            }
         } else {
-            if (!unique)
+            if (!unique) {
                 res = statsRepository.findByDatesAndUri(start, end, uris);
-            else
+            } else {
                 res = statsRepository.findByDatesUniqueIp(start, end, uris);
+            }
         }
 
         List<HitWithCountsDto> result = res.stream().map(HitMapper::toHitWithCountsDto).toList();

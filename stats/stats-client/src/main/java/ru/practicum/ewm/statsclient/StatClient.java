@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatClient {
-    void hit(HitCreateDto hitCreateDto);
+    void createHit(HitCreateDto hitCreateDto);
 
-    HitWithCountsDto getStat(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique);
+    List<HitWithCountsDto> getStat(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique);
 }
