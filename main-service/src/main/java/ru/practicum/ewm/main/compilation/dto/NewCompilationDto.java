@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
-import ru.practicum.ewm.main.event.dto.EventShortDto;
 
 import java.util.List;
 

@@ -314,8 +314,8 @@ public class EventServiceImpl implements EventService {
         List<EventCountConfirmedRequests> eventRequestsCount =
                 requestRepository.getCountRequests(eventIds);
 
-        eventDtos.forEach(e -> e.setConfirmedRequests(eventRequestsCount.stream().
-                filter(er -> er.getEventId().equals(e.getId()))
+        eventDtos.forEach(e -> e.setConfirmedRequests(eventRequestsCount.stream()
+                .filter(er -> er.getEventId().equals(e.getId()))
                 .findFirst().get().getCount()));
 
         // Заполнение количества просмотров событий
