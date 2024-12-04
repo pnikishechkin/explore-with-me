@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.ewm.main.category.Category;
 import ru.practicum.ewm.main.event.EventState;
 import ru.practicum.ewm.main.event.Location;
-import ru.practicum.ewm.main.user.User;
-import ru.practicum.ewm.main.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
