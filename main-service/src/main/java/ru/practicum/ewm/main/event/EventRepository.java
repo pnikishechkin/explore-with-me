@@ -2,10 +2,8 @@ package ru.practicum.ewm.main.event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -195,29 +193,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                                                 List<Boolean> availables,
                                                                 Integer from,
                                                                 Integer size);
-
-//    @Query(value = "SELECT * FROM (SELECT *," +
-//            "       CASE" +
-//            "           WHEN (req-participant_limit <= 0) THEN false" +
-//            "           ELSE true" +
-//            "           END AS available" +
-//            "  FROM (SELECT e.*," +
-//            "             COUNT(r.id) AS req" +
-//            "      FROM events AS e" +
-//            "               LEFT JOIN requests AS r ON e.id = r.event_id" +
-//            "      WHERE " +
-//            "(CAST(:text AS text) IS NULL OR " +
-//            "(upper(e.description) LIKE upper(concat('%', :text, '%')) OR " +
-//            "upper(e.annotation) LIKE upper(concat('%', :text, '%')))) AND " +
-//            "(CAST(:paid AS boolean) IS NULL OR e.paid = :paid) AND " +
-//            "(CAST(:start AS timestamp) IS NULL OR e.date_event >= :start) AND " +
-//            "(CAST(:end AS timestamp) IS NULL OR e.date_event <= :end) AND " +
-//            "(CAST(:categories AS text) IS NULL OR e.category_id IN :categories) " +
-//            "      GROUP BY e.id" +
-//            "      ORDER BY e.date_event)" +
-//            " WHERE (CAST(:availables AS boolean) IS NULL OR available IN :availables))" +
-//            "      OFFSET :from LIMIT :size", nativeQuery = true)
-
 
     @Query(value = "SELECT * FROM (SELECT *," +
             "       CASE" +

@@ -2,7 +2,6 @@ package ru.practicum.ewm.main.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.practicum.ewm.main.category.Category;
 
 import java.util.List;
 

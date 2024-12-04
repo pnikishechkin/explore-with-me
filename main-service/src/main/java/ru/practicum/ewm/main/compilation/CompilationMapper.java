@@ -2,9 +2,7 @@ package ru.practicum.ewm.main.compilation;
 
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
 import ru.practicum.ewm.main.compilation.dto.NewCompilationDto;
-import ru.practicum.ewm.main.event.Event;
 import ru.practicum.ewm.main.event.EventMapper;
-import ru.practicum.ewm.main.event.dto.EventCreateDto;
 
 public class CompilationMapper {
     public static Compilation toEntity(NewCompilationDto newCompilationDto) {
