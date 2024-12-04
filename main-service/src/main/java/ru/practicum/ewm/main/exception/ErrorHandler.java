@@ -4,6 +4,7 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -87,6 +88,34 @@ public class ErrorHandler {
         e.printStackTrace(pw);
         return new ApiError(HttpStatus.BAD_REQUEST,
                 "Required request parameter not found",
+                e.getMessage(),
+                LocalDateTime.now(),
+                Arrays.stream(e.getStackTrace()).toList());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ConflictException e) {
+        log.warn("409 {}", e.getMessage());
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return new ApiError(HttpStatus.CONFLICT,
+                "Required request parameter not found",
+                e.getMessage(),
+                LocalDateTime.now(),
+                Arrays.stream(e.getStackTrace()).toList());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final DataIntegrityViolationException e) {
+        log.warn("409 {}", e.getMessage());
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return new ApiError(HttpStatus.CONFLICT,
+                "DataIntegrityViolationException",
                 e.getMessage(),
                 LocalDateTime.now(),
                 Arrays.stream(e.getStackTrace()).toList());

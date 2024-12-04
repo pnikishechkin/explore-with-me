@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.main.category.dto.CategoryCreateDto;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
+import ru.practicum.ewm.main.event.EventRepository;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public List<Category> getAll(Integer from, Integer size) {
@@ -39,6 +42,10 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(Long catId) {
         categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException(
                 "Ошибка! Категории с заданным идентификатором не существует"));
+
+        if(!eventRepository.findByCategoryId(catId).isEmpty()) {
+            throw new ConflictException("Имеются события с данной категорией, ее удаление невозможно");
+        }
 
         categoryRepository.deleteById(catId);
     }

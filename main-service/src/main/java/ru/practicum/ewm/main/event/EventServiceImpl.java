@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.main.category.Category;
 import ru.practicum.ewm.main.category.CategoryRepository;
 import ru.practicum.ewm.main.event.dto.*;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.request.*;
 import ru.practicum.ewm.main.request.dto.RequestDto;
@@ -20,6 +21,8 @@ import ru.practicum.ewm.main.user.UserRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -93,6 +96,10 @@ public class EventServiceImpl implements EventService {
 
         if (event.getInitiator().getId().equals(user.getId())) {
             // TODO событие другого пользователя
+        }
+
+        if (event.getState() == EventState.PUBLISHED) {
+            throw new ConflictException("Нельзя отредактировать опубликованное событие");
         }
 
         if (eventUserUpdateDto.getAnnotation() != null) {
@@ -170,8 +177,14 @@ public class EventServiceImpl implements EventService {
             event.setTitle(eventAdminUpdateDto.getTitle());
         }
         if (eventAdminUpdateDto.getStateAction() == EventAdminStateAction.PUBLISH_EVENT) {
+            if (event.getState() == EventState.CANCELED || event.getState() == EventState.PUBLISHED) {
+                throw new ConflictException("Отмененное событие нельзя опубликовать");
+            }
             event.setState(EventState.PUBLISHED);
         } else if (eventAdminUpdateDto.getStateAction() == EventAdminStateAction.REJECT_EVENT) {
+            if (event.getState() == EventState.PUBLISHED) {
+                throw new ConflictException("Опубликованное событие нельзя отменить");
+            }
             event.setState(EventState.CANCELED);
         }
 
@@ -378,8 +391,32 @@ public class EventServiceImpl implements EventService {
                                                              RequestsStatusUpdateDto requestsStatusUpdateDto) {
         List<Request> requests = requestRepository.findAllById(requestsStatusUpdateDto.getRequestIds());
 
+        Event event = eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Ошибка! События с заданным идентификатором не существует"));
+
         if (requests.size() != requestsStatusUpdateDto.getRequestIds().size()) {
             // TODO Не все запросы с указанными идентификаторами найдены
+        }
+
+        if (requestsStatusUpdateDto.getStatus() == RequestStatus.REJECTED) {
+            // Если запрос на отклонение заявок...
+            // Проверка на то, что в списке заявок есть уже подтвержденные
+            requests.forEach(r -> {
+                if (r.getStatus() == RequestStatus.CONFIRMED) {
+                    throw new ConflictException("Попытка отменить уже подтвержденную заявку");
+                }
+            });
+        } else if (requestsStatusUpdateDto.getStatus() == RequestStatus.CONFIRMED) {
+            // Если идет запрос на подтверждение заявок...
+            // Проверка, что хватает места на все заявки
+            Integer countConfirmedRequest = requestRepository.getCountConfirmedRequestByEvent(eventId);
+
+            log.info("Количество подтвержденных запросов на участие в событии: {}", countConfirmedRequest);
+
+            if (event.getParticipantLimit() != 0 &&
+                    event.getParticipantLimit() - countConfirmedRequest < requests.size()) {
+                throw new ConflictException("На событие не осталось свободных мест");
+            }
         }
 
         requests.forEach(r -> r.setStatus(requestsStatusUpdateDto.getStatus()));
@@ -388,6 +425,7 @@ public class EventServiceImpl implements EventService {
 
         List<RequestDto> resDto = res.stream().map(RequestMapper::toDto).toList();
         RequestsStatusUpdateResultDto result = new RequestsStatusUpdateResultDto();
+
         if (requestsStatusUpdateDto.getStatus().equals(RequestStatus.CONFIRMED)) {
             result.setConfirmedRequests(resDto);
         } else {
@@ -423,10 +461,32 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findByAdmin(eap.getUsersIds(), statesNum, eap.getCategoriesIds(),
                 start, end, eap.getFrom(), eap.getSize());
 
+        List<EventFullDto> eventFullDtos = events.stream().map(EventMapper::toDto).toList();
+
         // TODO количество подтвержденных запросов
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        List<EventCountConfirmedRequests> eventRequestsCount =
+                requestRepository.getCountRequests(eventIds);
+
+        log.info(eventRequestsCount.toString());
+
+        for (EventFullDto eft : eventFullDtos) {
+            if (eventRequestsCount.stream().
+                    filter(er -> er.getEventId().equals(eft.getId()))
+                    .findFirst().isPresent()) {
+                eft.setConfirmedRequests(eventRequestsCount.stream().
+                        filter(er -> er.getEventId().equals(eft.getId()))
+                        .findFirst().get().getCount());
+            }
+        }
+
+//        eventFullDtos.stream().forEach(e -> e.setConfirmedRequests(eventRequestsCount.stream().
+//                        filter(er -> er.getEventId().equals(e.getId()))
+//                        .findFirst().get().getCount().
+//                .ifPresent(v -> v.getCount())));
 
         // TODO количество просмотров
 
-        return events.stream().map(EventMapper::toDto).toList();
+        return eventFullDtos;
     }
 }
