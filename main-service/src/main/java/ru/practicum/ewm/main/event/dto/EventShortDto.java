@@ -6,11 +6,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
 import ru.practicum.ewm.main.user.dto.UserShortDto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class EventShortDto implements Serializable {
+public class EventShortDto {
     private Long id;
 
     private String title;
