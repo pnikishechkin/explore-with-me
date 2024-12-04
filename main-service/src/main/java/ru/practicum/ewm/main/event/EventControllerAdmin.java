@@ -20,12 +20,12 @@ public class EventControllerAdmin {
 
     @GetMapping
     public List<EventFullDto> getEvents(@RequestParam(required = false) List<Long> users,
-                                    @RequestParam(required = false) List<String> states,
-                                    @RequestParam(required = false) List<Long> categories,
-                                    @RequestParam(required = false) String rangeStart,
-                                    @RequestParam(required = false) String rangeEnd,
-                                    @RequestParam(defaultValue = "0") Integer from,
-                                    @RequestParam(defaultValue = "10") Integer size) {
+                                        @RequestParam(required = false) List<String> states,
+                                        @RequestParam(required = false) List<Long> categories,
+                                        @RequestParam(required = false) String rangeStart,
+                                        @RequestParam(required = false) String rangeEnd,
+                                        @RequestParam(defaultValue = "0") Integer from,
+                                        @RequestParam(defaultValue = "10") Integer size) {
         EventAdminParams eap = new EventAdminParams();
         eap.setUsersIds(users);
         eap.setStates(states);

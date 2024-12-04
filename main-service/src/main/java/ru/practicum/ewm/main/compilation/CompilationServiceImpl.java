@@ -56,7 +56,7 @@ public class CompilationServiceImpl implements CompilationService {
                         "Ошибка! Подборки с заданным идентификатором не существует"));
 
         if (updateCompilationDto.getPinned() != null) {
-             compilation.setPinned(updateCompilationDto.getPinned());
+            compilation.setPinned(updateCompilationDto.getPinned());
         }
         if (updateCompilationDto.getTitle() != null) {
             compilation.setTitle(updateCompilationDto.getTitle());

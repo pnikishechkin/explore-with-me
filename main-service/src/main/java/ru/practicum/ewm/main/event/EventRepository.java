@@ -217,11 +217,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "      OFFSET :from LIMIT :size", nativeQuery = true)
     List<Event> findPublic(String text,
                            LocalDateTime start,
-                          LocalDateTime end,
+                           LocalDateTime end,
                            List<Long> categories,
-                          Boolean paid,
+                           Boolean paid,
                            Boolean available,
-                          Integer from,
+                           Integer from,
                            Integer size);
 
     @Query(value = "SELECT * FROM (SELECT *," +
@@ -272,13 +272,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "WHERE (CAST(:available AS boolean) IS NULL OR available = :available) " +
             "      OFFSET :from LIMIT :size", nativeQuery = true)
     List<Event> findPublicNoSort(String text,
-                           LocalDateTime start,
-                           LocalDateTime end,
-                           List<Long> categories,
-                           Boolean paid,
-                           Boolean available,
-                           Integer from,
-                           Integer size);
+                                 LocalDateTime start,
+                                 LocalDateTime end,
+                                 List<Long> categories,
+                                 Boolean paid,
+                                 Boolean available,
+                                 Integer from,
+                                 Integer size);
 
     @Query(value = "SELECT * FROM events WHERE " +
             "(CAST(:users AS text) IS NULL OR initiator_id IN :users) AND " +

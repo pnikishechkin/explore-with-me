@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException(
                 "Ошибка! Категории с заданным идентификатором не существует"));
 
-        if(!eventRepository.findByCategoryId(catId).isEmpty()) {
+        if (!eventRepository.findByCategoryId(catId).isEmpty()) {
             throw new ConflictException("Имеются события с данной категорией, ее удаление невозможно");
         }
 

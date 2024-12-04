@@ -18,7 +18,6 @@ import java.util.Map;
 @Slf4j
 public class EventStatsHandler {
     private final StatClient statsClient;
-    private final static String appName = "Explore with me";
 
     public void addHit(HttpServletRequest request) {
         HitCreateDto hitCreateDto = new HitCreateDto();
@@ -26,7 +25,7 @@ public class EventStatsHandler {
         hitCreateDto.setUri(request.getRequestURI());
         hitCreateDto.setIp(request.getRemoteAddr());
         hitCreateDto.setTimestamp(LocalDateTime.now());
-        hitCreateDto.setApp(appName);
+        hitCreateDto.setApp("Explore with me");
 
         log.info("В сервис статистики сохранен новый запрос: {}", hitCreateDto);
 

@@ -72,7 +72,7 @@ public class EventMapper {
         return eventShortDto;
     }
 
-    public static Event toEntity (EventUserUpdateDto eventUserUpdateDto, Event event) {
+    public static Event toEntity(EventUserUpdateDto eventUserUpdateDto, Event event) {
 
 
         return event;
