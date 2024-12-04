@@ -31,8 +31,8 @@ public class EventMapper {
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setAnnotation(event.getAnnotation());
 
-        eventFullDto.setCategory(event.getCategory());
-        eventFullDto.setInitiator(event.getInitiator());
+        eventFullDto.setCategory(CategoryMapper.toDto(event.getCategory()));
+        eventFullDto.setInitiator(UserMapper.toDto(event.getInitiator()));
 
         eventFullDto.setRequestModeration(event.getRequestModeration());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());
@@ -66,7 +66,6 @@ public class EventMapper {
 
         eventShortDto.setPaid(event.getPaid());
 
-        // TODO доработать
         eventShortDto.setConfirmedRequests(0);
         eventShortDto.setViews(0);
 

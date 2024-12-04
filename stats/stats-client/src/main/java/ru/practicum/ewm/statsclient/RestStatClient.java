@@ -2,9 +2,12 @@ package ru.practicum.ewm.statsclient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponents;
@@ -16,6 +19,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Primary
+@Component
+@Slf4j
 public class RestStatClient implements StatClient {
     private final RestClient client;
     private final String statUrl;
@@ -34,7 +40,9 @@ public class RestStatClient implements StatClient {
                     .body(hitCreateDto)
                     .retrieve()
                     .toBodilessEntity();
+            log.info("Сохранение нового запроса в сервисе статистики...");
         } catch (ResourceAccessException ignored) {
+            log.warn("Ошибка сохранения запроса в сервисе статистики");
         }
     }
 

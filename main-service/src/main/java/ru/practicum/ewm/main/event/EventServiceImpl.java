@@ -1,5 +1,7 @@
 package ru.practicum.ewm.main.event;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,10 +22,8 @@ import ru.practicum.ewm.main.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
-    private final RequestServiceImpl requestServiceImpl;
+    private final EventStatsHandler eventStatsHandler;
 
     @Override
     public EventFullDto post(EventCreateDto eventCreateDto) {
@@ -60,11 +60,25 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
                 "Ошибка! Пользователя с заданным идентификатором не существует"));
 
         List<Event> res = eventRepository.findByInitiatorIdFromSize(userId, from, size);
-        return res.stream().map(EventMapper::toShortDto).toList();
+
+        List<EventCountConfirmedRequests> eventRequestsCount =
+                requestRepository.getCountRequests(res.stream().map(Event::getId).toList());
+
+        List<EventShortDto> eventShortDtos = res.stream().map(EventMapper::toShortDto).toList();
+
+        eventShortDtos.stream().forEach(e ->
+                e.setConfirmedRequests(
+                        eventRequestsCount.stream()
+                                .filter(er -> er.getEventId().equals(e.getId()))
+                                .findFirst().get().getCount()
+                )
+        );
+
+        return eventShortDtos;
     }
 
     @Override
@@ -75,13 +89,12 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(
                 "Ошибка! События с заданным идентификатором не существует"));
 
-        if (event.getInitiator().getId().equals(user.getId())) {
-            // TODO ошибка: событие другого пользователя
-
+        if (!event.getInitiator().getId().equals(user.getId())) {
+            throw new ConflictException("Ошибка! Событие принадлежит другому пользователю!");
         }
 
         EventFullDto eventFullDto = EventMapper.toDto(event);
-        eventFullDto.setConfirmedRequests(requestRepository.getCountConfirmedRequestByEvent(eventId));
+        eventSetCountRequestsAndViews(eventFullDto);
 
         return eventFullDto;
     }
@@ -94,8 +107,8 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventUserUpdateDto.getId()).orElseThrow(() -> new NotFoundException(
                 "Ошибка! События с заданным идентификатором не существует"));
 
-        if (event.getInitiator().getId().equals(user.getId())) {
-            // TODO событие другого пользователя
+        if (!event.getInitiator().getId().equals(user.getId())) {
+            throw new ConflictException("Ошибка! Событие принадлежит другому пользователю!");
         }
 
         if (event.getState() == EventState.PUBLISHED) {
@@ -194,9 +207,10 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getEventsByParams(EventParams eventParams) {
+    public List<EventShortDto> getPublicEventsByParams(EventParams eventParams, HttpServletRequest request) {
 
-        List<Event> res = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
+        List<EventShortDto> eventShortDtos = new ArrayList<>();
 
         LocalDateTime start = eventParams.getRangeStart() == null ? LocalDateTime.now() :
                 LocalDateTime.parse(eventParams.getRangeStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd " +
@@ -217,7 +231,7 @@ public class EventServiceImpl implements EventService {
         if (eventParams.getSort() != null) {
             eventSort = EventSort.valueOf(eventParams.getSort());
             if (eventSort.equals(EventSort.EVENT_DATE)) {
-                res = eventRepository.findPublic(
+                events = eventRepository.findPublic(
                         eventParams.getText(),
                         start,
                         end,
@@ -226,9 +240,39 @@ public class EventServiceImpl implements EventService {
                         eventParams.getOnlyAvailable(),
                         eventParams.getFrom(),
                         eventParams.getSize());
+
+                eventShortDtos = events.stream().map(EventMapper::toShortDto).toList();
+                eventsSetCountRequestsAndViews(eventShortDtos);
+
+            } else if (eventSort.equals(EventSort.VIEWS)) {
+                // Сортировка по количеству запросов:
+                // Получаем из БД все результаты без ограничений
+                events = eventRepository.findPublic(
+                        eventParams.getText(),
+                        start,
+                        end,
+                        eventParams.getCategories(),
+                        eventParams.getPaid(),
+                        eventParams.getOnlyAvailable());
+
+                eventShortDtos = events.stream().map(EventMapper::toShortDto).collect(Collectors.toList());
+                // Заполняем количество запросов и просмотров
+                eventsSetCountRequestsAndViews(eventShortDtos);
+
+                // Сортируем список по количеству просмотров событий
+                Collections.sort(eventShortDtos, Comparator.comparing(EventShortDto::getViews));
+                // Отсекаем лишнее в списке
+                if (eventParams.getFrom() >= eventShortDtos.size()) {
+                    eventShortDtos = List.of();
+                } else {
+                    int lastIndex = eventParams.getFrom() + eventParams.getSize();
+                    eventShortDtos = eventShortDtos.subList(eventParams.getFrom(), Math.min(lastIndex,
+                            eventShortDtos.size() - 1));
+                }
             }
         } else {
-            res = eventRepository.findPublicNoSort(
+            // Результаты без указания сортировки
+            events = eventRepository.findPublicNoSort(
                     eventParams.getText(),
                     start,
                     end,
@@ -237,136 +281,55 @@ public class EventServiceImpl implements EventService {
                     eventParams.getOnlyAvailable(),
                     eventParams.getFrom(),
                     eventParams.getSize());
+
+            eventShortDtos = events.stream().map(EventMapper::toShortDto).toList();
+            eventsSetCountRequestsAndViews(eventShortDtos);
         }
 
-        log.info(eventParams.getSort());
+        // Запись запроса в статистику
+        eventStatsHandler.addHit(request);
 
-            /*
-            if (eventParams.getText() == null) {
-                // Не учитываем текст
-                if (eventParams.getCategories() == null) {
-                    // Не учитываем категории
-                    if (eventParams.getRangeEnd() == null) {
-                        // Не учитываем текст, категории и дату окончания
-                        log.info("Поиск события: Не учитываем текст, категории и дату окончания");
-                        res = eventRepository.findByStartPaidAvailableFromSize(
-                                start,
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    } else {
-                        // Учитываем дату окончания. Не учитываем текст и категории.
-                        log.info("Поиск события: Учитываем дату окончания. Не учитываем текст и категории.");
-                        res = eventRepository.findByStartEndPaidAvailableFromSize(
-                                start,
-                                end,
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    }
-                } else {
-                    // Учитываем категории
-                    if (eventParams.getRangeEnd() == null) {
-                        // Учитываем категории. Не учитываем текст и дату окончания.
-                        log.info("Поиск события: Учитываем категории. Не учитываем текст и дату окончания.");
-                        res = eventRepository.findByCategoriesStartPaidAvailableFromSize(
-                                start,
-                                eventParams.getCategories(),
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    } else {
-                        // Учитываем категории и дату окончания. Не учитываем текст.
-                        log.info("Поиск события: Учитываем категории и дату окончания. Не учитываем текст.");
-                        res = eventRepository.findByStartEndCategoriesPaidAvailableFromSize(
-                                start,
-                                end,
-                                eventParams.getCategories(),
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    }
-                }
-            } else {
-                // Учитываем текст
-                // Не учитываем категории
-                if (eventParams.getCategories() == null) {
-                    // Не учитываем дату окончания
-                    if (eventParams.getRangeEnd() == null) {
-                        // Учитываем текст. Не учитываем категории и дату окончания
-                        log.info("Поиск события: Учитываем текст. Не учитываем категории и дату окончания.");
-                        res = eventRepository.findByTextStartPaidAvailableFromSize(
-                                eventParams.getText(),
-                                start,
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    } else {
-                        // Учитываем текст и дату окончания. Не учитываем категории
-                        log.info("Поиск события: Учитываем текст и дату окончания. Не учитываем категории");
-                        res = eventRepository.findByTextStartEndPaidAvailableFromSize(
-                                eventParams.getText(),
-                                start,
-                                end,
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    }
-                } else {
-                    // Учитываем категории
-                    if (eventParams.getRangeEnd() == null) {
-                        // Учитываем текст и категории. Не учитываем дату окончания
-                        log.info("Поиск события: Учитываем текст и категории. Не учитываем дату окончания");
-                        res = eventRepository.findByTextStartCategoryPaidAvailableFromSize(
-                                eventParams.getText(),
-                                start,
-                                eventParams.getCategories(),
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    } else {
-                        // Учитываем текст, категории и дату окончания
-                        log.info("Поиск события: Учитываем текст, категории и дату окончания");
-                        res = eventRepository.findByTextStartEndCategoryPaidAvailableFromSize(
-                                eventParams.getText(),
-                                start,
-                                end,
-                                eventParams.getCategories(),
-                                paidValues,
-                                onlyAvailableValues,
-                                eventParams.getFrom(),
-                                eventParams.getSize());
-                    }
-                }
-            }
-             */
-//   else{
-        // TODO Сортировка по количеству запросов:
-        //  Вернуть из БД все результаты
-        //  Получить статистику, склеить и отсортировать результаты, отсеять лишние (from, size)
-//        }
-
-        // TODO Сохранить запрос в сервисе статистики
-
-        return res != null ? res.stream().map(EventMapper::toShortDto).toList() : null;
+        return eventShortDtos;
     }
 
     @Override
-    public EventFullDto getPublicEventById(Long eventId) {
+    public EventFullDto getPublicEventById(Long eventId, HttpServletRequest request) {
         Event event =
                 eventRepository.findByIdAndState(eventId,
                         EventState.PUBLISHED).orElseThrow(() -> new NotFoundException(
                         "Ошибка! События с заданными параметрами не существует или оно еще не опубликовано"));
         EventFullDto eventFullDto = EventMapper.toDto(event);
-        eventFullDto.setConfirmedRequests(requestRepository.getCountConfirmedRequestByEvent(eventId));
+
+        eventSetCountRequestsAndViews(eventFullDto);
+
+        // Запись запроса в статистику
+        eventStatsHandler.addHit(request);
+
         return eventFullDto;
+    }
+
+    private <T extends EventShortDto> void eventsSetCountRequestsAndViews(List<T> eventDtos) {
+        List<Long> eventIds = eventDtos.stream().map(EventShortDto::getId).toList();
+
+        // Заполнение количества подтвержденных запросов
+        List<EventCountConfirmedRequests> eventRequestsCount =
+                requestRepository.getCountRequests(eventIds);
+
+        eventDtos.forEach(e -> e.setConfirmedRequests(eventRequestsCount.stream().
+                filter(er -> er.getEventId().equals(e.getId()))
+                .findFirst().get().getCount()));
+
+        // Заполнение количества просмотров событий
+        Map<Long, Integer> eventView = eventStatsHandler.getCountHitsToEvents(eventIds);
+        eventDtos.forEach(e -> e.setViews(eventView.getOrDefault(e.getId(), 0)));
+    }
+
+    private void eventSetCountRequestsAndViews(EventShortDto eventDto) {
+        // Заполнение количества подтвержденных запросов
+        eventDto.setConfirmedRequests(requestRepository.getCountConfirmedRequestByEvent(eventDto.getId()));
+
+        // Заполнение количества просмотров события
+        eventDto.setViews(eventStatsHandler.getCountHitsToEvent(eventDto.getId()));
     }
 
     @Override
@@ -395,7 +358,7 @@ public class EventServiceImpl implements EventService {
                 new NotFoundException("Ошибка! События с заданным идентификатором не существует"));
 
         if (requests.size() != requestsStatusUpdateDto.getRequestIds().size()) {
-            // TODO Не все запросы с указанными идентификаторами найдены
+            throw new NotFoundException("Ошибка! Не найдены запросы по указанным идентификаторам");
         }
 
         if (requestsStatusUpdateDto.getStatus() == RequestStatus.REJECTED) {
@@ -463,29 +426,7 @@ public class EventServiceImpl implements EventService {
 
         List<EventFullDto> eventFullDtos = events.stream().map(EventMapper::toDto).toList();
 
-        // TODO количество подтвержденных запросов
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-        List<EventCountConfirmedRequests> eventRequestsCount =
-                requestRepository.getCountRequests(eventIds);
-
-        log.info(eventRequestsCount.toString());
-
-        for (EventFullDto eft : eventFullDtos) {
-            if (eventRequestsCount.stream().
-                    filter(er -> er.getEventId().equals(eft.getId()))
-                    .findFirst().isPresent()) {
-                eft.setConfirmedRequests(eventRequestsCount.stream().
-                        filter(er -> er.getEventId().equals(eft.getId()))
-                        .findFirst().get().getCount());
-            }
-        }
-
-//        eventFullDtos.stream().forEach(e -> e.setConfirmedRequests(eventRequestsCount.stream().
-//                        filter(er -> er.getEventId().equals(e.getId()))
-//                        .findFirst().get().getCount().
-//                .ifPresent(v -> v.getCount())));
-
-        // TODO количество просмотров
+        this.eventsSetCountRequestsAndViews(eventFullDtos);
 
         return eventFullDtos;
     }

@@ -266,6 +266,33 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "(CAST(:categories AS text) IS NULL OR e.category_id IN :categories) AND " +
             "(CAST(:start AS timestamp) IS NULL OR e.date_event >= :start) AND " +
             "(CAST(:end AS timestamp) IS NULL OR e.date_event <= :end) " +
+            "      GROUP BY e.id" +
+            "      ORDER BY date_event)) " +
+            "WHERE (CAST(:available AS boolean) IS NULL OR available = :available)", nativeQuery = true)
+    List<Event> findPublic(String text,
+                           LocalDateTime start,
+                           LocalDateTime end,
+                           List<Long> categories,
+                           Boolean paid,
+                           Boolean available);
+
+    @Query(value = "SELECT * FROM (SELECT *," +
+            "       CASE" +
+            "           WHEN (req-participant_limit <= 0) THEN false" +
+            "           ELSE true" +
+            "           END AS available" +
+            "  FROM (SELECT e.*," +
+            "             COUNT(r.id) AS req" +
+            "      FROM events AS e" +
+            "               LEFT JOIN requests AS r ON e.id = r.event_id" +
+            "      WHERE " +
+            "(CAST(:text AS text) IS NULL OR " +
+            "(upper(e.description) LIKE upper(concat('%', :text, '%')) OR " +
+            "upper(e.annotation) LIKE upper(concat('%', :text, '%')))) AND " +
+            "(CAST(:paid AS boolean) IS NULL OR e.paid = :paid) AND " +
+            "(CAST(:categories AS text) IS NULL OR e.category_id IN :categories) AND " +
+            "(CAST(:start AS timestamp) IS NULL OR e.date_event >= :start) AND " +
+            "(CAST(:end AS timestamp) IS NULL OR e.date_event <= :end) " +
             "      GROUP BY e.id)) " +
             "WHERE (CAST(:available AS boolean) IS NULL OR available = :available) " +
             "      OFFSET :from LIMIT :size", nativeQuery = true)

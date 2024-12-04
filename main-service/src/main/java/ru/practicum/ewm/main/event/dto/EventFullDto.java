@@ -8,27 +8,16 @@ import ru.practicum.ewm.main.category.Category;
 import ru.practicum.ewm.main.event.EventState;
 import ru.practicum.ewm.main.event.Location;
 import ru.practicum.ewm.main.user.User;
+import ru.practicum.ewm.main.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
 @Data
 @ToString
-public class EventFullDto {
+public class EventFullDto extends EventShortDto {
     private Long id;
 
-    private Integer confirmedRequests;
-    private Integer views;
-
-    private Category category;
-    private User initiator;
-
-    private String title;
-    private String annotation;
     private String description;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime eventDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -39,7 +28,7 @@ public class EventFullDto {
     private LocalDateTime publishedOn;
 
     private Location location;
-    private Boolean paid;
+
     private Integer participantLimit;
     private Boolean requestModeration;
 

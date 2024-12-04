@@ -1,6 +1,6 @@
 package ru.practicum.ewm.main.event;
 
-import lombok.Getter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,7 +27,8 @@ public class EventControllerPublic {
                                          @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                          @RequestParam(required = false) String sort,
                                          @RequestParam(defaultValue = "0") Integer from,
-                                         @RequestParam(defaultValue = "10") Integer size) {
+                                         @RequestParam(defaultValue = "10") Integer size,
+                                         HttpServletRequest request) {
         EventParams eventParams = new EventParams();
         eventParams.setText(text);
         eventParams.setCategories(categories);
@@ -40,11 +40,11 @@ public class EventControllerPublic {
         eventParams.setFrom(from);
         eventParams.setSize(size);
 
-        return eventService.getEventsByParams(eventParams);
+        return eventService.getPublicEventsByParams(eventParams, request);
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getPublicEvent(@PathVariable Long eventId) {
-        return eventService.getPublicEventById(eventId);
+    public EventFullDto getPublicEvent(@PathVariable Long eventId, HttpServletRequest request) {
+        return eventService.getPublicEventById(eventId, request);
     }
 }

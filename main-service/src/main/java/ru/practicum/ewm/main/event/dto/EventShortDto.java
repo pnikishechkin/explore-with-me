@@ -6,20 +6,23 @@ import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.ewm.main.category.dto.CategoryDto;
 import ru.practicum.ewm.main.user.dto.UserShortDto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class EventShortDto {
+public class EventShortDto implements Serializable {
     private Long id;
+
+    private String title;
     private String annotation;
     private CategoryDto category;
-    private Integer confirmedRequests;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
     private UserShortDto initiator;
     private Boolean paid;
-    private String title;
+
     private Integer views;
+    private Integer confirmedRequests;
 }

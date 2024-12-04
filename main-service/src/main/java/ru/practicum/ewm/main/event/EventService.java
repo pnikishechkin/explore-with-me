@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.event;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.ewm.main.event.dto.*;
 import ru.practicum.ewm.main.request.dto.RequestDto;
 import ru.practicum.ewm.main.request.dto.RequestsStatusUpdateDto;
@@ -17,11 +18,11 @@ public interface EventService {
 
     EventFullDto patch(Long userId, EventUserUpdateDto eventUserUpdateDto);
 
-    List<EventShortDto> getEventsByParams(EventParams eventParams);
+    List<EventShortDto> getPublicEventsByParams(EventParams eventParams, HttpServletRequest request);
 
     EventFullDto patchByAdmin(EventAdminUpdateDto eventAdminUpdateDto);
 
-    EventFullDto getPublicEventById(Long eventId);
+    EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 
     List<RequestDto> getRequestsByEvent(Long userId, Long eventId);
 

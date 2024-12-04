@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import ru.practicum.ewm.statsclient.StatClient;
 
 @SpringBootApplication
-//@ComponentScan(value = {"ru.practicum.ewm.statsclient"})
+@ComponentScan(value = {"ru.practicum.ewm.statsclient","ru.practicum.ewm.main"})
 public class MainService {
     public static void main(String[] args) {
         //ConfigurableApplicationContext context =

@@ -15,9 +15,9 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query(value = "SELECT count(*) FROM requests WHERE event_id = :eventId AND status = 1", nativeQuery = true)
     Integer getCountConfirmedRequestByEvent(Long eventId);
 
-    @Query(value = "SELECT e.id AS eventId, COUNT(*) AS count FROM events AS e LEFT JOIN requests AS r ON e.id = r" +
-            ".event_id " +
-            "WHERE e.id IN :eventIds AND r.status = 1 " +
+    @Query(value = "SELECT e.id AS event_id, COUNT(r.id) AS count FROM events AS e LEFT JOIN " +
+            "    (SELECT * FROM requests WHERE status=1) AS r ON e.id = r.event_id " +
+            "WHERE e.id IN :eventIds " +
             "GROUP BY e.id", nativeQuery = true)
     List<EventCountConfirmedRequests> getCountRequests(List<Long> eventIds);
 

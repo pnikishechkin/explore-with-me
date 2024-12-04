@@ -1,6 +1,7 @@
 package ru.practicum.ewm.stats;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.stats.model.Hit;
@@ -14,12 +15,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class StatsServiceImpl implements StatsService {
 
     private final StatsRepository statsRepository;
 
     @Override
     public Hit createHit(HitCreateDto hitCreateDto) {
+        log.info("StatsServiceImpl: сохранение нового запроса в сервисе статистики: {}", hitCreateDto);
         return statsRepository.save(HitMapper.toEntity(hitCreateDto));
     }
 
