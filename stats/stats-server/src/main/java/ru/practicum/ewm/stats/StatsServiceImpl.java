@@ -1,5 +1,6 @@
 package ru.practicum.ewm.stats;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class StatsServiceImpl implements StatsService {
     public List<HitWithCountsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 
         List<HitWithCounts> res = null;
+
+        if (end.isBefore(start)) {
+            throw new ValidationException("Дата окончания в поиске должна быть позже стартовой");
+        }
 
         if (uris == null) {
             if (!unique) {
