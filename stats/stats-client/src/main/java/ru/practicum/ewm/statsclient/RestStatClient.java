@@ -1,11 +1,9 @@
 package ru.practicum.ewm.statsclient;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
@@ -18,6 +16,7 @@ import ru.practicum.ewm.statsdto.HitWithCountsDto;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -50,11 +49,9 @@ public class RestStatClient implements StatClient {
     public List<HitWithCountsDto> getStat(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         String startString = start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String endString = end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String urisString = String.join(",", uris);
+        String urisString = uris.stream().collect(Collectors.joining(",")); //String.join(",", uris);
 
         UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme("http")
-                .host("localhost:9090")
                 .path("/stats")
                 .query("start={keyword}")
                 .query("end={keyword}")
@@ -62,25 +59,18 @@ public class RestStatClient implements StatClient {
                 .query("unique={keyword}")
                 .buildAndExpand(startString, endString, urisString, unique);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        log.info("Запрос на получение статистики, параметры: {} {} {}", startString, endString, urisString);
+
         try {
-            return client.get()
-                    .uri(uriComponents.toUriString())
-                    .exchange((request, response) -> {
-                        try {
-                            if (response.getStatusCode().isSameCodeAs(HttpStatus.OK)) {
-                                return objectMapper.readValue(response.getBody(), new TypeReference<>() {
-                                });
-                            } else {
-                                throw new ResourceAccessException("StatServer error");
-                            }
-                        } catch (ResourceAccessException e) {
-                            return List.of();
-                        }
+            log.info("getStat UriComponents: {}", uriComponents.toUriString());
+            return client.get().uri(statUrl + uriComponents.toUriString()).retrieve()
+                    .body(new ParameterizedTypeReference<>() {
                     });
         } catch (ResourceAccessException e) {
+            log.info("getStat exception: {}", e.getMessage());
             return List.of();
         }
+
     }
 
     public static void main(String[] args) {

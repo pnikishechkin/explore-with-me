@@ -40,6 +40,8 @@ public class EventStatsHandler {
                 List.of(getUri(eventId)),
                 true);
 
+        log.info("Количество элементов в массиве по событию с путем {}: {}", getUri(eventId), hits.size());
+
         Integer res = hits.isEmpty() ? 0 : hits.getFirst().getHits();
 
         log.info("Количество просмотров события с идентификатором {}: {}", eventId, res);
