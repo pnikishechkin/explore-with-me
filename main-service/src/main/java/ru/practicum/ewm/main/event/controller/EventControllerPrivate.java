@@ -1,10 +1,11 @@
-package ru.practicum.ewm.main.event;
+package ru.practicum.ewm.main.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.event.EventService;
 import ru.practicum.ewm.main.event.dto.EventCreateDto;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
@@ -35,7 +36,7 @@ public class EventControllerPrivate {
     public EventFullDto postEvent(@PathVariable Long userId,
                                   @RequestBody @Validated EventCreateDto eventCreateDto) {
         eventCreateDto.setInitiatorId(userId);
-        return eventService.post(eventCreateDto);
+        return eventService.create(eventCreateDto);
     }
 
     @PatchMapping("/{eventId}")
@@ -43,7 +44,7 @@ public class EventControllerPrivate {
                                    @PathVariable Long eventId,
                                    @RequestBody @Validated EventUserUpdateDto eventUserUpdateDto) {
         eventUserUpdateDto.setId(eventId);
-        return eventService.patch(userId, eventUserUpdateDto);
+        return eventService.update(userId, eventUserUpdateDto);
     }
 
     @GetMapping("/{eventId}")

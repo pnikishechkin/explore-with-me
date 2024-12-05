@@ -1,9 +1,11 @@
-package ru.practicum.ewm.main.event;
+package ru.practicum.ewm.main.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.event.EventAdminParams;
+import ru.practicum.ewm.main.event.EventService;
 import ru.practicum.ewm.main.event.dto.EventAdminUpdateDto;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 
@@ -41,6 +43,6 @@ public class EventControllerAdmin {
     public EventFullDto patchEvent(@PathVariable Long eventId,
                                    @RequestBody @Validated EventAdminUpdateDto eventAdminUpdateDto) {
         eventAdminUpdateDto.setId(eventId);
-        return eventService.patchByAdmin(eventAdminUpdateDto);
+        return eventService.updateByAdmin(eventAdminUpdateDto);
     }
 }

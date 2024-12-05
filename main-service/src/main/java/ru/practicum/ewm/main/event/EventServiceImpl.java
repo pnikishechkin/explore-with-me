@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.main.category.Category;
 import ru.practicum.ewm.main.category.CategoryRepository;
 import ru.practicum.ewm.main.event.dto.*;
+import ru.practicum.ewm.main.event.model.Event;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.request.*;
@@ -37,7 +38,7 @@ public class EventServiceImpl implements EventService {
     private final EventStatsHandler eventStatsHandler;
 
     @Override
-    public EventFullDto post(EventCreateDto eventCreateDto) {
+    public EventFullDto create(EventCreateDto eventCreateDto) {
 
         User user = userRepository.findById(eventCreateDto.getInitiatorId()).orElseThrow(() -> new NotFoundException(
                 "Ошибка! Пользователя с заданным идентификатором не существует"));
@@ -99,7 +100,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto patch(Long userId, EventUserUpdateDto eventUserUpdateDto) {
+    public EventFullDto update(Long userId, EventUserUpdateDto eventUserUpdateDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
                 "Ошибка! Пользователя с заданным идентификатором не существует"));
 
@@ -154,7 +155,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto patchByAdmin(EventAdminUpdateDto eventAdminUpdateDto) {
+    public EventFullDto updateByAdmin(EventAdminUpdateDto eventAdminUpdateDto) {
 
         Event event = eventRepository.findById(eventAdminUpdateDto.getId()).orElseThrow(() -> new NotFoundException(
                 "Ошибка! События с заданным идентификатором не существует"));

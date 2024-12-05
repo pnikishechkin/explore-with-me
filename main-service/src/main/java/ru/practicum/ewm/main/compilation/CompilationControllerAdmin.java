@@ -20,7 +20,7 @@ public class CompilationControllerAdmin {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto postCompilation(@RequestBody @Validated NewCompilationDto newCompilationDto) {
-        return compilationService.post(newCompilationDto);
+        return compilationService.create(newCompilationDto);
     }
 
     @DeleteMapping("/{compId}")
@@ -33,6 +33,6 @@ public class CompilationControllerAdmin {
     public CompilationDto patchCompilation(@PathVariable Long compId,
                                            @RequestBody @Validated UpdateCompilationDto updateCompilationDto) {
         updateCompilationDto.setId(compId);
-        return compilationService.patch(updateCompilationDto);
+        return compilationService.update(updateCompilationDto);
     }
 }
