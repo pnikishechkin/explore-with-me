@@ -104,11 +104,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentFullDto> getByFilters() {
-        return List.of();
-    }
-
-    @Override
     public List<CommentShortDto> getByEventId(Long eventId, Pageable pageable) {
         return commentRepository.findByEventId(eventId, pageable).stream().map(CommentMapper::toShortDto).toList();
     }

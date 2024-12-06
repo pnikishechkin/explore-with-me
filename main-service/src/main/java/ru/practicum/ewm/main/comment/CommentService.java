@@ -18,7 +18,5 @@ public interface CommentService {
 
     CommentFullDto getById(Long commentId);
 
-    List<CommentFullDto> getByFilters();
-
     List<CommentShortDto> getByEventId(Long eventId, Pageable pageable);
 }
