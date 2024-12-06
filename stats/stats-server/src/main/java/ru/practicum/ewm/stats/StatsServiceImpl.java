@@ -1,6 +1,8 @@
 package ru.practicum.ewm.stats;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.stats.model.Hit;
@@ -14,12 +16,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class StatsServiceImpl implements StatsService {
 
     private final StatsRepository statsRepository;
 
     @Override
     public Hit createHit(HitCreateDto hitCreateDto) {
+        log.info("StatsServiceImpl: сохранение нового запроса в сервисе статистики: {}", hitCreateDto);
         return statsRepository.save(HitMapper.toEntity(hitCreateDto));
     }
 
@@ -27,6 +31,10 @@ public class StatsServiceImpl implements StatsService {
     public List<HitWithCountsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 
         List<HitWithCounts> res = null;
+
+        if (end.isBefore(start)) {
+            throw new ValidationException("Дата окончания в поиске должна быть позже стартовой");
+        }
 
         if (uris == null) {
             if (!unique) {
