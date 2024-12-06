@@ -1,9 +1,10 @@
-package ru.practicum.ewm.main.comment;
+package ru.practicum.ewm.main.comment.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.comment.CommentService;
 import ru.practicum.ewm.main.comment.dto.CommentFullDto;
 import ru.practicum.ewm.main.comment.dto.CommentShortDto;
 import ru.practicum.ewm.main.common.OffsetPageRequest;
