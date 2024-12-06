@@ -2,6 +2,7 @@ package ru.practicum.ewm.main.comment.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.comment.CommentService;
@@ -25,19 +26,11 @@ public class CommentControllerPublic {
         return commentService.getById(commentId);
     }
 
-    @GetMapping("/comments")
-    public List<CommentFullDto> getByFilters(@RequestParam(defaultValue = "0") Integer from,
-                                             @RequestParam(defaultValue = "10") Integer size) {
-        // filter Params: список пользователей, список событий, from, size
-        return commentService.getByFilters();
-    }
-
     @GetMapping("/events/{eventId}/comments")
     public List<CommentShortDto> getByEventId(@PathVariable Long eventId,
                                               @RequestParam(defaultValue = "0") Integer from,
                                               @RequestParam(defaultValue = "10") Integer size) {
-        OffsetPageRequest pr = new OffsetPageRequest(from, size);
-
+        OffsetPageRequest pr = new OffsetPageRequest(from, size, Sort.by("id"));
         return commentService.getByEventId(eventId, pr);
     }
 

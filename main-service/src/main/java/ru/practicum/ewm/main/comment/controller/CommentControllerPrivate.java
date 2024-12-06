@@ -24,8 +24,10 @@ public class CommentControllerPrivate {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CommentTextDto post(@PathVariable Long userId,
-                               @RequestBody CommentCreateDto commentCreateDto) {
+                               @RequestParam Long eventId,
+                               @RequestBody @Validated CommentCreateDto commentCreateDto) {
         commentCreateDto.setUserId(userId);
+        commentCreateDto.setEventId(eventId);
         return commentService.create(commentCreateDto);
     }
 
@@ -39,7 +41,7 @@ public class CommentControllerPrivate {
     @PatchMapping("/{commentId}")
     public CommentTextDto patch(@PathVariable Long userId,
                                 @PathVariable Long commentId,
-                                @RequestBody CommentUpdateDto commentUpdateDto) {
+                                @RequestBody @Validated CommentUpdateDto commentUpdateDto) {
         commentUpdateDto.setId(commentId);
         commentUpdateDto.setUserId(userId);
         return commentService.update(commentUpdateDto);

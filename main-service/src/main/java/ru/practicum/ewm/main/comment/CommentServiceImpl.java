@@ -40,6 +40,9 @@ public class CommentServiceImpl implements CommentService {
             throw new ConflictException("Нельзя добавить комментарий к неопубликованному событию");
         }
 
+        comment.setUser(user);
+        comment.setEvent(event);
+
         return CommentMapper.toTextDto(commentRepository.save(comment));
     }
 

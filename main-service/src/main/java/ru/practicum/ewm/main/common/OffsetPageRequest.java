@@ -8,7 +8,6 @@ public class OffsetPageRequest implements Pageable {
     private final int offset;
     private final int limit;
 
-    // this attribute can be let out if you don't need it
     private Sort sort;
 
     public OffsetPageRequest(int offset, int limit, Sort sort) {
