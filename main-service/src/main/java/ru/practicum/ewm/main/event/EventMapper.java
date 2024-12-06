@@ -5,6 +5,7 @@ import ru.practicum.ewm.main.event.dto.EventCreateDto;
 import ru.practicum.ewm.main.event.dto.EventFullDto;
 import ru.practicum.ewm.main.event.dto.EventShortDto;
 import ru.practicum.ewm.main.event.dto.EventUserUpdateDto;
+import ru.practicum.ewm.main.event.model.Event;
 import ru.practicum.ewm.main.user.UserMapper;
 
 public class EventMapper {

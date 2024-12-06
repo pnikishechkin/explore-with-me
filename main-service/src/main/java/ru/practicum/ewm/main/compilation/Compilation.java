@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.ewm.main.event.Event;
+import ru.practicum.ewm.main.event.model.Event;
 
 import java.util.List;
 

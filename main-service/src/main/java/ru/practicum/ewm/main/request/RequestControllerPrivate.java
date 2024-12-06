@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMapping;
 import ru.practicum.ewm.main.request.dto.RequestDto;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class RequestControllerPrivate {
     @ResponseStatus(HttpStatus.CREATED)
     public RequestDto postRequest(@PathVariable Long userId,
                                   @RequestParam Long eventId) {
-        return requestService.post(userId, eventId);
+        return requestService.create(userId, eventId);
     }
 
     @PatchMapping("/{requestId}/cancel")

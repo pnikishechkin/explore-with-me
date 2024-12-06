@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.ewm.main.event.EventAdminStateAction;
-import ru.practicum.ewm.main.event.Location;
+import ru.practicum.ewm.main.event.model.Location;
 
 import java.time.LocalDateTime;
 

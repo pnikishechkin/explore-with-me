@@ -7,11 +7,11 @@ import ru.practicum.ewm.main.compilation.dto.UpdateCompilationDto;
 import java.util.List;
 
 public interface CompilationService {
-    CompilationDto post(NewCompilationDto newCompilationDto);
+    CompilationDto create(NewCompilationDto newCompilationDto);
 
     void delete(Long compId);
 
-    CompilationDto patch(UpdateCompilationDto updateCompilationDto);
+    CompilationDto update(UpdateCompilationDto updateCompilationDto);
 
     CompilationDto getById(Long compId);
 

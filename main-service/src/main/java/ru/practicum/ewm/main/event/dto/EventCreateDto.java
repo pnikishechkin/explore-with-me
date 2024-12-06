@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.ewm.main.event.Location;
+import ru.practicum.ewm.main.event.model.Location;
 
 import java.time.LocalDateTime;
 

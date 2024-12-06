@@ -10,17 +10,17 @@ import java.util.List;
 
 public interface EventService {
 
-    EventFullDto post(EventCreateDto eventCreateDto);
+    EventFullDto create(EventCreateDto eventCreateDto);
 
     List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
     EventFullDto getEventByUser(Long userId, Long eventId);
 
-    EventFullDto patch(Long userId, EventUserUpdateDto eventUserUpdateDto);
+    EventFullDto update(Long userId, EventUserUpdateDto eventUserUpdateDto);
 
     List<EventShortDto> getPublicEventsByParams(EventParams eventParams, HttpServletRequest request);
 
-    EventFullDto patchByAdmin(EventAdminUpdateDto eventAdminUpdateDto);
+    EventFullDto updateByAdmin(EventAdminUpdateDto eventAdminUpdateDto);
 
     EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 

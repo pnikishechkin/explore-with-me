@@ -3,9 +3,9 @@ package ru.practicum.ewm.main.request;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.main.event.Event;
 import ru.practicum.ewm.main.event.EventRepository;
 import ru.practicum.ewm.main.event.EventState;
+import ru.practicum.ewm.main.event.model.Event;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.request.dto.RequestDto;
@@ -31,7 +31,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public RequestDto post(Long userId, Long eventId) {
+    public RequestDto create(Long userId, Long eventId) {
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("Ошибка! Пользователя с заданным идентификатором не существует"));

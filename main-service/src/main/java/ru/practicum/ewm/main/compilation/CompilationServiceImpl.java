@@ -8,8 +8,8 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.main.compilation.dto.CompilationDto;
 import ru.practicum.ewm.main.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.main.compilation.dto.UpdateCompilationDto;
-import ru.practicum.ewm.main.event.Event;
 import ru.practicum.ewm.main.event.EventRepository;
+import ru.practicum.ewm.main.event.model.Event;
 import ru.practicum.ewm.main.exception.NotFoundException;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final EventRepository eventRepository;
 
     @Override
-    public CompilationDto post(NewCompilationDto newCompilationDto) {
+    public CompilationDto create(NewCompilationDto newCompilationDto) {
         Compilation compilation = CompilationMapper.toEntity(newCompilationDto);
 
         if (newCompilationDto.getEvents() != null) {
@@ -49,7 +49,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto patch(UpdateCompilationDto updateCompilationDto) {
+    public CompilationDto update(UpdateCompilationDto updateCompilationDto) {
 
         Compilation compilation =
                 compilationRepository.findById(updateCompilationDto.getId()).orElseThrow(() -> new NotFoundException(

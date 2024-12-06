@@ -21,8 +21,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAll(Integer from, Integer size) {
-
-        // return categoryRepository.findAll(PageRequest.of(from, size)).stream().toList();
         return categoryRepository.findAllLimitOffset(from, size);
     }
 
